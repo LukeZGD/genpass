@@ -1,0 +1,210 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9D1811831282986B0059F115 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D1811821282986B0059F115 /* main.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9D18117C1282986B0059F115 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		9D18117E1282986B0059F115 /* genpass */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = genpass; sourceTree = BUILT_PRODUCTS_DIR; };
+		9D1811811282986B0059F115 /* genpass.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = genpass.1; sourceTree = "<group>"; };
+		9D1811821282986B0059F115 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9D18117B1282986B0059F115 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9D1811711282986B0059F115 = {
+			isa = PBXGroup;
+			children = (
+				9D1811781282986B0059F115 /* Source */,
+				9D1811791282986B0059F115 /* Documentation */,
+				9D18117F1282986B0059F115 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9D1811781282986B0059F115 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				9D1811821282986B0059F115 /* main.cpp */,
+			);
+			path = Source;
+			sourceTree = "<group>";
+		};
+		9D1811791282986B0059F115 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				9D1811811282986B0059F115 /* genpass.1 */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
+		9D18117F1282986B0059F115 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9D18117E1282986B0059F115 /* genpass */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9D18117D1282986B0059F115 /* genpass */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9D1811861282986B0059F115 /* Build configuration list for PBXNativeTarget "genpass" */;
+			buildPhases = (
+				9D18117A1282986B0059F115 /* Sources */,
+				9D18117B1282986B0059F115 /* Frameworks */,
+				9D18117C1282986B0059F115 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = genpass;
+			productName = genpass;
+			productReference = 9D18117E1282986B0059F115 /* genpass */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9D1811731282986B0059F115 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 9D1811761282986B0059F115 /* Build configuration list for PBXProject "genpass" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 9D1811711282986B0059F115;
+			productRefGroup = 9D18117F1282986B0059F115 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9D18117D1282986B0059F115 /* genpass */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9D18117A1282986B0059F115 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D1811831282986B0059F115 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		9D1811841282986B0059F115 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				PREBINDING = NO;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		9D1811851282986B0059F115 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				PREBINDING = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		9D1811871282986B0059F115 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		9D1811881282986B0059F115 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9D1811761282986B0059F115 /* Build configuration list for PBXProject "genpass" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D1811841282986B0059F115 /* Debug */,
+				9D1811851282986B0059F115 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9D1811861282986B0059F115 /* Build configuration list for PBXNativeTarget "genpass" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D1811871282986B0059F115 /* Debug */,
+				9D1811881282986B0059F115 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9D1811731282986B0059F115 /* Project object */;
+}
