@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9D1811831282986B0059F115 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D1811821282986B0059F115 /* main.cpp */; };
+		9D181191128298D30059F115 /* genpass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9D181190128298D30059F115 /* genpass.cpp */; };
+		9D181193128299A10059F115 /* libcrypto.0.9.8.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D181192128299A10059F115 /* libcrypto.0.9.8.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,8 +25,8 @@
 
 /* Begin PBXFileReference section */
 		9D18117E1282986B0059F115 /* genpass */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = genpass; sourceTree = BUILT_PRODUCTS_DIR; };
-		9D1811811282986B0059F115 /* genpass.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = genpass.1; sourceTree = "<group>"; };
-		9D1811821282986B0059F115 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		9D181190128298D30059F115 /* genpass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = genpass.cpp; sourceTree = SOURCE_ROOT; };
+		9D181192128299A10059F115 /* libcrypto.0.9.8.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.0.9.8.dylib; path = /usr/lib/libcrypto.0.9.8.dylib; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D181193128299A10059F115 /* libcrypto.0.9.8.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,7 +45,6 @@
 			isa = PBXGroup;
 			children = (
 				9D1811781282986B0059F115 /* Source */,
-				9D1811791282986B0059F115 /* Documentation */,
 				9D18117F1282986B0059F115 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -51,17 +52,10 @@
 		9D1811781282986B0059F115 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				9D1811821282986B0059F115 /* main.cpp */,
+				9D181192128299A10059F115 /* libcrypto.0.9.8.dylib */,
+				9D181190128298D30059F115 /* genpass.cpp */,
 			);
 			path = Source;
-			sourceTree = "<group>";
-		};
-		9D1811791282986B0059F115 /* Documentation */ = {
-			isa = PBXGroup;
-			children = (
-				9D1811811282986B0059F115 /* genpass.1 */,
-			);
-			name = Documentation;
 			sourceTree = "<group>";
 		};
 		9D18117F1282986B0059F115 /* Products */ = {
@@ -119,7 +113,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9D1811831282986B0059F115 /* main.cpp in Sources */,
+				9D181191128298D30059F115 /* genpass.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
