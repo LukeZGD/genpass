@@ -33,6 +33,8 @@ typedef struct {
 	uint64 dataoffset;
 } encrcdsa_header;
 
+const char encrcdsa_sig[8] = {'e', 'n', 'c', 'r', 'c', 'd', 's', 'a'};
+
 typedef struct {
 	uint32 unk1;
 	uint32 unk2;
@@ -173,9 +175,16 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 	}
 	
 	fread(buffer, 1, sizeof(encrcdsa_header), fd);
+	if (0 != memcmp(((encrcdsa_header*)buffer)->sig, encrcdsa_sig, sizeof(encrcdsa_sig))) {
+		errmsg = "encrcdsa signature mismatch (make sure you're using valid rootfs dmg!)";
+		goto cleanup;	
+	}
 	
 	fread(&blocks, 1, sizeof(uint32), fd);
 	FLIPENDIAN(blocks);
+	if (g_verbose) {
+		printf("%u blocks\n", blocks);
+	}
 	
 	fread(buffer, 1, sizeof(encrcdsa_block) * blocks, fd);
 	fread(buffer, 1, 0x80, fd);
@@ -185,7 +194,6 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 	fread(buffer, 1, skip-3, fd);
 	
 	out = (uint8*)malloc(0x30);
-	free(buffer);
 	
 	for (int i = 0; i < 0x20; i++) {
 		if (fread(data, 1, 0x30, fd) <= 0) {
@@ -302,7 +310,7 @@ int main(int argc, char* argv[]) {
 			fprintf(stderr, "Unable to generate asr passphrase\n");
 			return -1;
 		}
-	} else {
+	} else if (!filesystem) {
 		usage();
 	}
 
