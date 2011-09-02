@@ -268,7 +268,7 @@ void usage()
 			"   OR: genpass -h <hex passphrase> -f <filesystem.dmg>\n"
 			"   Add '-v' for verbose ..\n"
 			"platform = s5l8900x (for iphone2g, iphone3g, and ipod1g), s5l8720x (for ipod2g),\n"
-			"s5l8920x (for iphone3gs), s5l8922x (for ipod3g), or s5l8930 (for ipad1g)\n"
+			"s5l8920x (for iphone3gs), s5l8922x (for ipod3g), or s5l8930x (for iPhone4, ipad1g, ATV2)\n"
 			"ramdisk.dmg = a decrypted restore or upgrade ramdisk from the IPSW with the target filesystem\n"
 			"filesystem.dmg = the encrypted filesystem you're trying to discover the vfdecrypt key for\n");
 	exit (0);
