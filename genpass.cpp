@@ -120,9 +120,25 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 		salt[i] += platformHash;
 		saltedHash[i] = ((uint32) (salt[i] % totalSize)) & 0xFFFFFE00;
 	}
-	qsort(&saltedHash, 4, 4, (int(*)(const void *, const void *)) &compare);
+
+    if (g_verbose) {
+        printf("Salted hash pre qsort: ");
+        print_hex((uint8*)saltedHash, 0x10);
+    }
+    
+    qsort(&saltedHash, 4, 4, (int(*)(const void *, const void *)) &compare);
 	
+    if (g_verbose) {
+        printf("Change ver 0x322\n");
+        printf("Salted hash post qsort: ");
+        print_hex((uint8*)saltedHash, 0x10);
+    }
+
 	SHA256_Init(&ctx);
+    if (g_verbose) {
+        printf("CC_SHA256_Update: ");
+        print_hex((uint8*)salt, 32);
+    }
 	SHA256_Update(&ctx, salt, 32);//SHA256_DIGEST_LENGTH);
 	
 	int count = 0;
@@ -133,16 +149,24 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 		SHA256_Update(&ctx, buffer, bytes);
 		
 		for (i = 0; i < 4; i++) { //some salts remain
-			if (count < saltedHash[i] && saltedHash[i] < (count + bytes)) {
-				if ((saltedHash[i] + 0x4000) < count) {
-					SHA256_Update(&ctx, buffer, saltedHash[i] - count);
-					
-				} else {
-					SHA256_Update(&ctx, buffer + (saltedHash[i] - count), 
-								  ((bytes - (saltedHash[i] - count)) < 0x4000) ? 
-									(bytes - (saltedHash[i] - count)) : 0x4000);
-				}
-			}
+			int sh = saltedHash[i];
+            int shEnd = sh + 0x4000;
+            
+            bool start = count < sh && sh < (count + bytes);
+            bool end = count < shEnd && shEnd < (count + bytes);
+            if (start || end) {
+                uint8* ptr = start ? buffer + (sh - count) : buffer;
+                size_t len;
+                if (start) {
+                    len = ((bytes - (sh - count)) < 0x4000) ? 
+                        (bytes - (sh - count)) : 0x4000;
+                } else {
+                    len = ((shEnd - count) < 0x4000) ? 
+                        (shEnd - count) : 0x4000;
+                }
+                printf("SHA256_Update([%p+]%p, 0x%x)\n", count, ptr - buffer, len);
+                SHA256_Update(&ctx, ptr, len); 
+            }
 		}
 		count += bytes;
 	}
