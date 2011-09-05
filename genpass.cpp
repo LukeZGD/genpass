@@ -43,7 +43,7 @@ typedef struct {
 	uint32 unk5;
 } encrcdsa_block;
 
-static bool g_verbose = false;
+static int g_verbose = 0;
 
 static inline void flip_endian(unsigned char* x, int length) {
 	unsigned int i = 0;
@@ -136,12 +136,12 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 
 	SHA256_Init(&ctx);
     if (g_verbose) {
-        printf("CC_SHA256_Update: ");
+        printf("SHA256_Update(salt): ");
         print_hex((uint8*)salt, 32);
     }
 	SHA256_Update(&ctx, salt, 32);//SHA256_DIGEST_LENGTH);
 	
-	int count = 0;
+	uint64 count = 0;
 	uint8* buffer = (uint8*)malloc(BUF_SIZE);
 	uint8* passphrase = (uint8*)malloc(SHA256_DIGEST_LENGTH);
 	while (count < totalSize) {
@@ -149,22 +149,26 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 		SHA256_Update(&ctx, buffer, bytes);
 		
 		for (i = 0; i < 4; i++) { //some salts remain
-			int sh = saltedHash[i];
-            int shEnd = sh + 0x4000;
+			uint32 sh = saltedHash[i];
+            uint32 shEnd = sh + 0x4000;
             
-            bool start = count < sh && sh < (count + bytes);
-            bool end = count < shEnd && shEnd < (count + bytes);
-            if (start || end) {
-                uint8* ptr = start ? buffer + (sh - count) : buffer;
+            int isStart = count < sh && sh < (count + bytes);
+            int isEnd = count < shEnd && shEnd < (count + bytes);
+            if (isStart || isEnd) {
+                uint8* ptr;
                 size_t len;
-                if (start) {
-                    len = ((bytes - (sh - count)) < 0x4000) ? 
-                        (bytes - (sh - count)) : 0x4000;
+                if (isStart) {
+					ptr = buffer + (sh - count);
+                    len = bytes + count - sh;
                 } else {
-                    len = ((shEnd - count) < 0x4000) ? 
-                        (shEnd - count) : 0x4000;
+					ptr = buffer;
+                    len = shEnd - count;
                 }
-                printf("SHA256_Update([%p+]%p, 0x%x)\n", count, ptr - buffer, len);
+				if (len > 0x4000)
+					len = 0x4000;
+				if (g_verbose) {
+					 printf("SHA256_Update([0x%x+]0x%x, 0x%x)\n", (uint32)count, ptr - buffer, len);
+				}
                 SHA256_Update(&ctx, ptr, len); 
             }
 		}
@@ -185,6 +189,7 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 	int outlen, tmplen = 0;
 	uint32 blocks = 0;
 	uint32 skip = 0;
+	int i;
 	
 	FILE* fd = fopen(filesystem, "rb");
 	if (fd == NULL) {
@@ -219,7 +224,7 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 	
 	out = (uint8*)malloc(0x30);
 	
-	for (int i = 0; i < 0x20; i++) {
+	for (i = 0; i < 0x20; i++) {
 		if (fread(data, 1, 0x30, fd) <= 0) {
 			errmsg = "Error reading filesystem image";
 			goto cleanup;
@@ -297,6 +302,7 @@ int main(int argc, char* argv[]) {
 				break;
 			case 'h':			
 			{	
+				int i;
 				int passlen = strlen(optarg);
 				int passlen_req = 2 * SHA256_DIGEST_LENGTH;
 				if (passlen != passlen_req) {
@@ -304,7 +310,7 @@ int main(int argc, char* argv[]) {
 					return -1;
 				}
 				pass = (uint8*)malloc(SHA256_DIGEST_LENGTH);
-				for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+				for (i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
 					unsigned int byte;
 					const char* pHex = optarg + 2 * i;
 					if (!sscanf(pHex, "%02X", &byte)) {
@@ -316,7 +322,7 @@ int main(int argc, char* argv[]) {
 				break;
 			}			
 			case 'v':
-				g_verbose = true;
+				g_verbose = 1;
 				break;
 			case '?':
 			default:

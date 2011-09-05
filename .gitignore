@@ -1,2 +1,4 @@
 genpass
-
+genpass.o
+genpass.a
+genpass.exe
