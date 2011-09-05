@@ -5,7 +5,7 @@ PLATFORM_OPTIONS = -lcrypto
 else
 ifeq ($(UNAME), Darwin)
 # OS X
-PLATFORM_OPTIONS = -lcrypto -force_cpusubtype_ALL -arch i386 -arch x86_64
+PLATFORM_OPTIONS = -lcrypto -force_cpusubtype_ALL -arch i386 -arch x86_64 -Wno-deprecated-declarations
 else
 MINGW = $(findstring MINGW32, $(UNAME))
 ifneq ($(MINGW), "")
