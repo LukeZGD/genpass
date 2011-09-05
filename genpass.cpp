@@ -167,7 +167,7 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
                 if (len > 0x4000)
                     len = 0x4000;
                 if (g_verbose) {
-                    printf("SHA256_Update([0x%llx+]0x%x, 0x%zx)\n", count, (unsigned)(ptr - buffer), len);
+                    printf("SHA256_Update([0x%x+]0x%x, 0x%x)\n", (uint32)count, (uint32)(ptr - buffer), (uint32)len);
                 }
                 SHA256_Update(&ctx, ptr, len); 
             }
