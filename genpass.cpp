@@ -129,7 +129,6 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
     qsort(&saltedHash, 4, 4, (int(*)(const void *, const void *)) &compare);
     
     if (g_verbose) {
-        printf("Change ver 0x322\n");
         printf("Salted hash post qsort: ");
         print_hex((uint8*)saltedHash, 0x10);
     }
@@ -189,7 +188,7 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
     int outlen, tmplen = 0;
     uint32 blocks = 0;
     uint32 skip = 0;
-    int i;
+    uint32 i;
     
     FILE* fd = fopen(filesystem, "rb");
     if (fd == NULL) {
@@ -224,13 +223,11 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
     
     out = (uint8*)malloc(0x30);
     
-    for (i = 0; i < 0x20; i++) {
+    for (i = 0; i < blocks; i++) {
         if (fread(data, 1, 0x30, fd) <= 0) {
             errmsg = "Error reading filesystem image";
             goto cleanup;
         }
-        
-        if(data[0] == 0) break;
         
         EVP_CIPHER_CTX_init(&ctx);
         EVP_DecryptInit_ex(&ctx, EVP_des_ede3_cbc(), NULL, passphrase,
