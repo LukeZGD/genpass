@@ -10,9 +10,7 @@ else
 MINGW = $(findstring MINGW32, $(UNAME))
 ifneq ($(MINGW), "")
 # WIN32
-ifeq ("$(OPENSSL_DIR)", "")
-$(error Please specify OpenSSL path in OPENSSL_DIR variable: make -e OPENSSL_DIR=YOUR_OPENSSL_DIR; must contain libcrypto.a and include/ subfolder)
-endif
+OPENSSL_DIR=/usr
 PLATFORM_OPTIONS = -I$(OPENSSL_DIR)/include -L$(OPENSSL_DIR) -lcrypto -lgdi32
 else
 $(error Unknown platform)
