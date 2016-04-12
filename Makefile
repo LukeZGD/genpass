@@ -6,6 +6,9 @@ else
 ifeq ($(UNAME), Darwin)
 # OS X
 PLATFORM_OPTIONS = -lcrypto -force_cpusubtype_ALL -arch i386 -arch x86_64 -Wno-deprecated-declarations
+ifneq ($(OPENSSL_DIR),)
+PLATFORM_OPTIONS += -I$(OPENSSL_DIR)/include -L$(OPENSSL_DIR)/lib
+endif
 else
 MINGW = $(findstring MINGW32, $(UNAME))
 ifneq ($(MINGW), "")
