@@ -126,7 +126,7 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 	}
 
 	qsort(&saltedHash, 4, 4, (int(*)(const void *, const void *)) &compare);
-	
+
 	if (g_verbose) {
 		printf("Salted hash post qsort: ");
 		print_hex((uint8*)saltedHash, 0x10);
@@ -243,7 +243,7 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 	}
 
 	errmsg = "Decrypt FAILED!";
-	
+
 cleanup:
 	if (fd) {
 		fclose(fd);
@@ -271,11 +271,11 @@ void usage()
 int main(int argc, char* argv[]) {
 	uint8* pass = NULL;
 	uint8* key = NULL;
-	
+
 	const char* filesystem = NULL;
 	const char* platform = NULL;
 	const char* ramdisk = NULL;
-	
+
 	int ch;
 	while ((ch = getopt(argc, argv, "vp:r:f:")) != -1) {
 		switch (ch) {
@@ -317,11 +317,11 @@ int main(int argc, char* argv[]) {
 				usage();
 		}
 	}
-	
+
 	if (argc == 1 || argc != optind) {
 		usage();
 	}
-	
+
 	if (!pass && ramdisk && platform) {
 		pass = generate_passphrase(platform, ramdisk);
 		if (pass == NULL) {
@@ -331,8 +331,8 @@ int main(int argc, char* argv[]) {
 	} else if (!filesystem) {
 		usage();
 	}
-	
-	
+
+
 	if (g_verbose || !filesystem) {
 		printf("ASR passphrase: ");
 		print_hex(pass, 0x20);
@@ -348,11 +348,11 @@ int main(int argc, char* argv[]) {
 		printf("vfdecrypt key: ");
 		print_hex(key, 0x24);
 	}
-	
+
 	if (pass)
 		free(pass);
 	if (key)
 		free(key);
-	
+
 	return 0;
 }
