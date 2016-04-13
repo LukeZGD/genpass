@@ -31,17 +31,32 @@ typedef struct {
 	uint32 blocksize;
 	uint64 datasize;
 	uint64 dataoffset;
-} encrcdsa_header;
+	uint32 keys;
+} __attribute__((packed)) encrcdsa_header;
 
 const char encrcdsa_sig[8] = {'e', 'n', 'c', 'r', 'c', 'd', 's', 'a'};
 
 typedef struct {
-	uint32 unk1;
-	uint32 unk2;
-	uint32 unk3;
-	uint32 unk4;
-	uint32 unk5;
-} encrcdsa_block;
+	uint32 type;
+	uint64 offset;
+	uint64 size;
+} __attribute__((packed)) encrcdsa_key_ptr;
+
+typedef struct {
+	uint32 kdf_algorithm;
+	uint32 kdf_prng_algorithm;
+	uint32 kdf_iteration_count;
+	uint32 kdf_salt_len;
+	uint8 kdf_salt[32];
+	uint32 blob_enc_iv_size;
+	uint8 blob_enc_iv[32];
+	uint32 blob_enc_key_bits;
+	uint32 blob_enc_algorithm;
+	uint32 blob_enc_padding;
+	uint32 blob_enc_mode;
+	uint32 encrypted_keyblob_size;
+	uint8 encrypted_keyblob[0x30];
+} __attribute__((packed)) encrcdsa_wrapped_key;
 
 static int g_verbose = 0;
 
@@ -126,7 +141,7 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 	}
 
 	qsort(&saltedHash, 4, 4, (int(*)(const void *, const void *)) &compare);
-	
+
 	if (g_verbose) {
 		printf("Salted hash post qsort: ");
 		print_hex((uint8*)saltedHash, 0x10);
@@ -180,13 +195,10 @@ uint8* generate_passphrase(const char* platform, const char* ramdisk) {
 
 uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 	const char* errmsg = NULL;
-	uint8* buffer = NULL;
 	uint8* out = NULL;
-	EVP_CIPHER_CTX ctx;
-	uint8 data[0x30];
-	int outlen, tmplen = 0;
-	uint32 blocks = 0;
-	uint32 skip = 0;
+	int outlen = 0;
+	encrcdsa_key_ptr* key_ptrs = NULL;
+	encrcdsa_header header;
 	uint32 i;
 
 	FILE* fd = fopen(filesystem, "rb");
@@ -195,61 +207,122 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 		goto cleanup;
 	}
 
-	buffer = (uint8*) malloc(BUF_SIZE);
-	if(buffer == NULL) {
-		errmsg = "Unable to allocate memory";
-		goto cleanup;
-	}
-
-	fread(buffer, 1, sizeof(encrcdsa_header), fd);
-	if (0 != memcmp(((encrcdsa_header*)buffer)->sig, encrcdsa_sig, sizeof(encrcdsa_sig))) {
+	fread(&header, 1, sizeof(encrcdsa_header), fd);
+	if (0 != memcmp(header.sig, encrcdsa_sig, sizeof(encrcdsa_sig))) {
 		errmsg = "encrcdsa signature mismatch (make sure you're using a valid rootfs dmg!)";
 		goto cleanup;
 	}
 
-	fread(&blocks, 1, sizeof(uint32), fd);
-	FLIPENDIAN(blocks);
+	FLIPENDIAN(header.keys);
 	if (g_verbose) {
-		printf("%u blocks\n", blocks);
+		printf("%u keys\n", header.keys);
 	}
 
-	fread(buffer, 1, sizeof(encrcdsa_block) * blocks, fd);
-	fread(buffer, 1, 0x80, fd);
+	key_ptrs = (encrcdsa_key_ptr*)malloc(header.keys * sizeof(encrcdsa_key_ptr));
+	if(!key_ptrs) {
+		errmsg = "Error allocating key ptrs";
+		goto cleanup;
+	}
 
-	fread(&skip, 1, sizeof(uint32), fd);
-	FLIPENDIAN(skip);
-	fread(buffer, 1, skip-3, fd);
+	if (fread(key_ptrs, 1, sizeof(encrcdsa_key_ptr) * header.keys, fd) != (sizeof(encrcdsa_key_ptr) * header.keys)) {
+		errmsg = "Error reading key ptrs";
+		goto cleanup;
+	}
 
-	out = (uint8*)malloc(0x30);
+	for (i = 0; i < header.keys; i++) {
+		FLIPENDIAN(key_ptrs[i].type);
+		FLIPENDIAN(key_ptrs[i].offset);
+		FLIPENDIAN(key_ptrs[i].size);
+		if (key_ptrs[i].type != 1)
+			continue;
 
-	for (i = 0; i < blocks; i++) {
-		if (fread(data, 1, 0x30, fd) <= 0) {
-			errmsg = "Error reading filesystem image";
+		fseek(fd, key_ptrs[i].offset, SEEK_SET);
+
+		encrcdsa_wrapped_key wrapped_key;
+		if (fread(&wrapped_key, 1, sizeof(encrcdsa_wrapped_key), fd) != sizeof(encrcdsa_wrapped_key)) {
+			errmsg = "Error reading wrapped key";
 			goto cleanup;
 		}
 
+		FLIPENDIAN(wrapped_key.kdf_algorithm);
+		FLIPENDIAN(wrapped_key.kdf_prng_algorithm);
+		FLIPENDIAN(wrapped_key.kdf_iteration_count);
+		FLIPENDIAN(wrapped_key.kdf_salt_len);
+		FLIPENDIAN(wrapped_key.blob_enc_iv_size);
+		FLIPENDIAN(wrapped_key.blob_enc_key_bits);
+		FLIPENDIAN(wrapped_key.blob_enc_algorithm);
+		FLIPENDIAN(wrapped_key.blob_enc_padding);
+		FLIPENDIAN(wrapped_key.blob_enc_mode);
+		FLIPENDIAN(wrapped_key.encrypted_keyblob_size);
+
+		// CSSM_ALGID_3DES_3KEY_EDE
+		if(wrapped_key.blob_enc_algorithm != 17)
+			continue;
+
+		// CSSM_PADDING_PKCS7
+		if(wrapped_key.blob_enc_padding != 7)
+			continue;
+
+		// CSSM_ALGMODE_CBCPadIV8
+		if(wrapped_key.blob_enc_mode != 6)
+			continue;
+
+		size_t derived_key_size = wrapped_key.blob_enc_key_bits / 8;
+		uint8* derived_key = (uint8*)malloc(derived_key_size);
+		uint8* iv;
+
+		memcpy(derived_key, passphrase, derived_key_size);
+		iv = &passphrase[derived_key_size];
+
+		out = (uint8*)malloc(wrapped_key.encrypted_keyblob_size);
+
+		EVP_CIPHER_CTX ctx;
 		EVP_CIPHER_CTX_init(&ctx);
-		EVP_DecryptInit_ex(&ctx, EVP_des_ede3_cbc(), NULL, passphrase, &passphrase[24]);
+		EVP_DecryptInit_ex(&ctx, EVP_des_ede3_cbc(), NULL, derived_key, iv);
+		free(derived_key);
 
-		EVP_DecryptUpdate(&ctx, out, &outlen, data, 0x30);
-		if (EVP_DecryptFinal_ex(&ctx, out + outlen, &tmplen)) {
-			if (g_verbose) {
-				printf("Block %u matches!\n", i);
-			}
-			goto cleanup;
+		if (!EVP_DecryptUpdate(&ctx, out, &outlen, wrapped_key.encrypted_keyblob, wrapped_key.encrypted_keyblob_size)) {
+			EVP_CIPHER_CTX_cleanup(&ctx);
+			free(out);
+			out = NULL;
+			continue;
 		}
 
-		fseek(fd, 0x238, SEEK_CUR);
+		int finallen;
+		if (!EVP_DecryptFinal_ex(&ctx, out + outlen, &finallen)) {
+			EVP_CIPHER_CTX_cleanup(&ctx);
+			free(out);
+			out = NULL;
+			continue;
+		}
+
+		EVP_CIPHER_CTX_cleanup(&ctx);
+
+		uint8_t magic[] = {0x43, 0x4b, 0x49, 0x45, 0x00};
+		// Key is 128-bit AES key|HMAC-SHA1|5 byte magic
+		if ((outlen + finallen) != (16 + 20 + sizeof(magic))) {
+			free(out);
+			out = NULL;
+			continue;
+		}
+
+		if (memcmp(out + 16 + 20, magic, sizeof(magic)) != 0) {
+			free(out);
+			out = NULL;
+			continue;
+		}
+
+		goto cleanup;
 	}
 
 	errmsg = "Decrypt FAILED!";
-	
+
 cleanup:
 	if (fd) {
 		fclose(fd);
 	}
-	if (buffer) {
-		free(buffer);
+	if (key_ptrs) {
+		free(key_ptrs);
 	}
 	if (errmsg) {
 		fprintf(stderr, "%s\n", errmsg);
@@ -271,11 +344,11 @@ void usage()
 int main(int argc, char* argv[]) {
 	uint8* pass = NULL;
 	uint8* key = NULL;
-	
+
 	const char* filesystem = NULL;
 	const char* platform = NULL;
 	const char* ramdisk = NULL;
-	
+
 	int ch;
 	while ((ch = getopt(argc, argv, "vp:r:f:")) != -1) {
 		switch (ch) {
@@ -317,11 +390,11 @@ int main(int argc, char* argv[]) {
 				usage();
 		}
 	}
-	
+
 	if (argc == 1 || argc != optind) {
 		usage();
 	}
-	
+
 	if (!pass && ramdisk && platform) {
 		pass = generate_passphrase(platform, ramdisk);
 		if (pass == NULL) {
@@ -331,8 +404,8 @@ int main(int argc, char* argv[]) {
 	} else if (!filesystem) {
 		usage();
 	}
-	
-	
+
+
 	if (g_verbose || !filesystem) {
 		printf("ASR passphrase: ");
 		print_hex(pass, 0x20);
@@ -348,11 +421,11 @@ int main(int argc, char* argv[]) {
 		printf("vfdecrypt key: ");
 		print_hex(key, 0x24);
 	}
-	
+
 	if (pass)
 		free(pass);
 	if (key)
 		free(key);
-	
+
 	return 0;
 }
