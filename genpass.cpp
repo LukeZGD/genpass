@@ -276,27 +276,27 @@ uint8* decrypt_key(const char* filesystem, uint8* passphrase) {
 
 		out = (uint8*)malloc(wrapped_key.encrypted_keyblob_size);
 
-		EVP_CIPHER_CTX ctx;
-		EVP_CIPHER_CTX_init(&ctx);
-		EVP_DecryptInit_ex(&ctx, EVP_des_ede3_cbc(), NULL, derived_key, iv);
+		EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+		EVP_CIPHER_CTX_init(ctx);
+		EVP_DecryptInit_ex(ctx, EVP_des_ede3_cbc(), NULL, derived_key, iv);
 		free(derived_key);
 
-		if (!EVP_DecryptUpdate(&ctx, out, &outlen, wrapped_key.encrypted_keyblob, wrapped_key.encrypted_keyblob_size)) {
-			EVP_CIPHER_CTX_cleanup(&ctx);
+		if (!EVP_DecryptUpdate(ctx, out, &outlen, wrapped_key.encrypted_keyblob, wrapped_key.encrypted_keyblob_size)) {
+			EVP_CIPHER_CTX_cleanup(ctx);
 			free(out);
 			out = NULL;
 			continue;
 		}
 
 		int finallen;
-		if (!EVP_DecryptFinal_ex(&ctx, out + outlen, &finallen)) {
-			EVP_CIPHER_CTX_cleanup(&ctx);
+		if (!EVP_DecryptFinal_ex(ctx, out + outlen, &finallen)) {
+			EVP_CIPHER_CTX_cleanup(ctx);
 			free(out);
 			out = NULL;
 			continue;
 		}
 
-		EVP_CIPHER_CTX_cleanup(&ctx);
+		EVP_CIPHER_CTX_cleanup(ctx);
 
 		uint8_t magic[] = {0x43, 0x4b, 0x49, 0x45, 0x00};
 		// Key is 128-bit AES key|HMAC-SHA1|5 byte magic
