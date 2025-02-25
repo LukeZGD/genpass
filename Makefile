@@ -5,7 +5,7 @@ PLATFORM_OPTIONS = -lcrypto
 else
 ifeq ($(UNAME), Darwin)
 # OS X
-PLATFORM_OPTIONS = -lcrypto -force_cpusubtype_ALL -arch x86_64 -Wno-deprecated-declarations -L/usr/local/opt/openssl/lib -I/usr/local/opt/openssl/include
+PLATFORM_OPTIONS = -lcrypto -Wno-deprecated-declarations -L/opt/local/lib/openssl-3 -I/opt/local/include/openssl-3
 ifneq ($(OPENSSL_DIR),)
 PLATFORM_OPTIONS += -I$(OPENSSL_DIR)/include -L$(OPENSSL_DIR)/lib
 endif
